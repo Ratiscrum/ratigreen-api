@@ -7,13 +7,17 @@ import { UpdateMessageDto } from './dto/update-message.dto';
 export class MessagesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(createMessageDto: CreateMessageDto, userId: number) {
+  create(
+    createMessageDto: CreateMessageDto,
+    questionId: number,
+    userId: number,
+  ) {
     return this.prisma.message.create({
       data: {
         text: createMessageDto.text,
         question: {
           connect: {
-            id: createMessageDto.questionId,
+            id: questionId,
           },
         },
         user: {

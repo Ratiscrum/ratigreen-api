@@ -62,18 +62,19 @@ export class QuestionsController {
     }
   }
 
-  @Post('message')
+  @Post(':id/message')
   async createMessage(
     @Body() createMessageDto: CreateMessageDto,
+    @Param('id') id: string,
     @Res() res,
     @Req() req,
   ) {
     try {
       const createdMessage = await this.messageService.create(
         {
-          questionId: createMessageDto.questionId,
           text: createMessageDto.text,
         },
+        +id,
         req.user.id,
       );
       this.logger.log('Message created successfully');
