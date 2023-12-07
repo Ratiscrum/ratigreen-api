@@ -1,7 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../services/prisma.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
-import { UpdateQuestionDto } from './dto/update-question.dto';
+//import { UpdateQuestionDto } from './dto/update-question.dto';
 import { Question } from '@prisma/client';
 import { unlinkSync } from 'fs';
 import { join } from 'path';
