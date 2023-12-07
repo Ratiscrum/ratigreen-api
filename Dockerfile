@@ -15,4 +15,6 @@ RUN npm install
 
 RUN npx prisma generate
 
+EXPOSE 80
+
 CMD npm start
