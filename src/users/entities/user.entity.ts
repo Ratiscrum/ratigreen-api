@@ -7,4 +7,5 @@ export class UserEntity implements User {
   password: string;
   createdAt: Date;
   updatedAt: Date;
+  refreshToken: string;
 }
