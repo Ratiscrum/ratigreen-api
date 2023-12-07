@@ -21,6 +21,7 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  messages  Message[]
 }
 
 model Question {
@@ -29,6 +30,18 @@ model Question {
   choices  Choice[]
   answer   String
   imageUrl String
+  messages  Message[]
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  text      String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  question  Question @relation(fields: [questionId], references: [id])
+  questionId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Indicator {

@@ -37,4 +37,7 @@ lerna-debug.log*
 # Prisma 
 *.db
 
+# env var
+.env
+
 /uploads/*
