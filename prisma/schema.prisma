@@ -15,53 +15,49 @@ generator client {
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
-  email     String  @unique
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
   name      String
   password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   messages  Message[]
 }
 
 model Question {
-  id       Int      @id @default(autoincrement())
+  id       Int       @id @default(autoincrement())
   title    String
-  choices  Choice[]
-  answer   String
+  answer   Boolean
   imageUrl String
-  messages  Message[]
+  datas    Data[]
+  sources  Source[]
+  messages Message[]
 }
 
 model Message {
-  id        Int      @id @default(autoincrement())
-  text      String
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  question  Question @relation(fields: [questionId], references: [id])
+  id         Int      @id @default(autoincrement())
+  text       String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  question   Question @relation(fields: [questionId], references: [id])
   questionId Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
-enum Indicator {
-  HAPPY
-  ENJOYMENT
-  MONEY
+model Data {
+  id          Int      @id @default(autoincrement())
+  question    Question @relation(fields: [questionId], references: [id])
+  questionId  Int
+  value       Float
+  answer      String
+  explanation String
 }
 
-model Choice {
-  id                    Int                    @id @default(autoincrement())
-  text                  String
-  question              Question               @relation(fields: [questionId], references: [id])
-  questionId            Int
-  indicatorCoefficients IndicatorCoefficient[]
-}
-
-model IndicatorCoefficient {
-  id          Int       @id @default(autoincrement())
-  indicator   Indicator
-  coefficient Float
-  choiceId    Int
-  choice      Choice    @relation(fields: [choiceId], references: [id])
+model Source {
+  id         Int      @id @default(autoincrement())
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId Int
+  name       String
+  link       String
 }

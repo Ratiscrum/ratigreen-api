@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
   Param,
   Body,
@@ -13,12 +12,14 @@ import {
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
-import { UpdateQuestionDto } from './dto/update-question.dto';
+//import { UpdateQuestionDto } from './dto/update-question.dto';
 import { Logger } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateMessageDto } from 'src/messages/dto/create-message.dto';
 import { MessagesService } from 'src/messages/messages.service';
+import { Public } from 'src/decorators/public.decorator';
 
+@Public()
 @Controller('api/questions')
 export class QuestionsController {
   private readonly logger = new Logger(QuestionsController.name);
@@ -107,13 +108,13 @@ export class QuestionsController {
     return this.questionsService.getQuestion(+id);
   }
 
-  @Put(':id')
-  updateFull(
-    @Param('id') id: string,
-    @Body() updateQuestionDto: UpdateQuestionDto,
-  ) {
-    return this.questionsService.updateQuestion(+id, updateQuestionDto);
-  }
+  // @Put(':id')
+  // updateFull(
+  // @Param('id') id: string,
+  // @Body() updateQuestionDto: UpdateQuestionDto,
+  // ) {
+  // return this.questionsService.updateQuestion(+id, updateQuestionDto);
+  // }
 
   @Delete(':id')
   async remove(@Param('id') id: string, @Res() res) {
