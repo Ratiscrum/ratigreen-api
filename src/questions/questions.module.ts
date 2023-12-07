@@ -4,6 +4,7 @@ import { QuestionsService } from './questions.service';
 import { PrismaService } from 'src/services/prisma.service';
 import { MulterModule } from '@nestjs/platform-express';
 import { PrismaClient } from '@prisma/client';
+import { MessagesModule } from 'src/messages/messages.module';
 
 @Module({
   controllers: [QuestionsController],
@@ -12,6 +13,7 @@ import { PrismaClient } from '@prisma/client';
       dest: './uploads',
     }),
     PrismaClient,
+    MessagesModule,
   ],
   providers: [QuestionsService, PrismaService],
 })
