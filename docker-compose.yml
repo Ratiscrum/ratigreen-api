@@ -1,10 +1,24 @@
 version: '3'
+
+networks:
+  web:
+    external: true # traefik network
+
 services:
-  ratisexe-api:
-    image: 
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: prisma
-      POSTGRES_PASSWORD: prisma
-      POSTGRES_DB: prisma
+  ratigreen-api:
+    image: "ghcr.io/ratiscrum/ratigreen-api:main"
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./uploads:/opt/api/uploads
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ratigreen-api.rule=Host(`api.${RATIGREEN_URL}`)"
+      - "traefik.http.routers.ratigreen-api.tls=true"
+      - "traefik.http.routers.ratigreen-api.tls.certresolver=httpsresolver"
+      - "traefik.http.routers.ratigreen-api.entrypoints=websecure"
+      - "traefik.http.services.ratigreen-api.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.cors-headers.headers.accessControlAllowOriginListRegex=(.*?)"
