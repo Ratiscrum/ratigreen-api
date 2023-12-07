@@ -90,6 +90,7 @@ export class QuestionsService {
             indicatorCoefficients: true,
           },
         },
+        messages: true,
       },
     });
   }
