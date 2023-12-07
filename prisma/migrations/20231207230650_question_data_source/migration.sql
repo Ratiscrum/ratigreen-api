@@ -41,7 +41,7 @@ CREATE TABLE "Source" (
     "id" SERIAL NOT NULL,
     "questionId" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
-    "link" TEXT NOT NULL,
+    "link" TEXT,
 
     CONSTRAINT "Source_pkey" PRIMARY KEY ("id")
 );

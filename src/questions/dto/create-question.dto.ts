@@ -12,10 +12,6 @@ export class CreateQuestionDto {
   @IsBoolean()
   answer: boolean;
 
-  // @IsNotEmpty()
-  // @IsUrl()
-  // imageUrl: string;
-
   @IsNotEmpty()
   sources: CreateSourceDto[];
 

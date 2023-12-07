@@ -5,7 +5,6 @@ export class CreateSourceDto {
   @IsString()
   name: string;
 
-  @IsNotEmpty()
   @IsUrl()
   link: string;
 }
