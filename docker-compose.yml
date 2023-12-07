@@ -1,10 +1,7 @@
 version: '3'
 services:
   ratisexe-api:
-    build: 
-      context: .
-      dockerfile: Dockerfile 
-    image: prisma_postgres
+    image: 
     ports:
       - "5432:5432"
     environment:
