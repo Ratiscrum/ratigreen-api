@@ -9,4 +9,5 @@ export class UserEntity implements User {
   isTwoFAEnabled: boolean;
   createdAt: Date;
   updatedAt: Date;
+  refreshToken: string;
 }
