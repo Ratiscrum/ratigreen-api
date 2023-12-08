@@ -37,7 +37,8 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const { password: _, ...publicUser } = user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, refreshToken, ...publicUser } = user;
 
     const tokens = await this.getTokens(user.id, user.name);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
