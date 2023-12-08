@@ -34,7 +34,7 @@ export class AuthController {
 
   @Get('logout')
   logout(@Req() req: Request) {
-    this.authService.logout(req.user['sbu']);
+    this.authService.logout(req.user['sub']);
   }
 
   @Public()
