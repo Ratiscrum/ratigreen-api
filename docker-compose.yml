@@ -20,5 +20,5 @@ services:
       - "traefik.http.routers.ratigreen-api.tls=true"
       - "traefik.http.routers.ratigreen-api.tls.certresolver=httpsresolver"
       - "traefik.http.routers.ratigreen-api.entrypoints=websecure"
-      - "traefik.http.services.ratigreen-api.loadbalancer.server.port=80"
+      - "traefik.http.services.ratigreen-api.loadbalancer.server.port=3001"
       - "traefik.http.middlewares.cors-headers.headers.accessControlAllowOriginListRegex=(.*?)"

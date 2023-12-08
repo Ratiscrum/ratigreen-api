@@ -2,25 +2,32 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
   Param,
   Body,
   Res,
   UseInterceptors,
   UploadedFile,
+  Req,
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
-import { UpdateQuestionDto } from './dto/update-question.dto';
+//import { UpdateQuestionDto } from './dto/update-question.dto';
 import { Logger } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateMessageDto } from 'src/messages/dto/create-message.dto';
+import { MessagesService } from 'src/messages/messages.service';
+import { Public } from 'src/decorators/public.decorator';
 
+@Public()
 @Controller('api/questions')
 export class QuestionsController {
   private readonly logger = new Logger(QuestionsController.name);
 
-  constructor(private readonly questionsService: QuestionsService) {}
+  constructor(
+    private readonly questionsService: QuestionsService,
+    private readonly messageService: MessagesService,
+  ) {}
 
   @Post()
   async create(@Body() createQuestionDto: CreateQuestionDto, @Res() res) {
@@ -29,7 +36,7 @@ export class QuestionsController {
         await this.questionsService.createQuestion(createQuestionDto);
       this.logger.log('Question created successfully');
       return res.status(200).send({
-        id: createdQuestion.id,
+        ...createdQuestion,
         message: 'Question created successfully',
       });
     } catch (e) {
@@ -56,6 +63,29 @@ export class QuestionsController {
     }
   }
 
+  @Post(':id/message')
+  async createMessage(
+    @Body() createMessageDto: CreateMessageDto,
+    @Param('id') id: string,
+    @Res() res,
+    @Req() req,
+  ) {
+    try {
+      const createdMessage = await this.messageService.create(
+        {
+          text: createMessageDto.text,
+        },
+        +id,
+        req.user.id,
+      );
+      this.logger.log('Message created successfully');
+      return res.status(200).send(createdMessage);
+    } catch (e) {
+      this.logger.error(e);
+      res.status(400).send('An error occured while creating the message');
+    }
+  }
+
   @Get('image/:imagePath')
   getImage(@Param('imagePath') image: string, @Res() res) {
     try {
@@ -78,13 +108,13 @@ export class QuestionsController {
     return this.questionsService.getQuestion(+id);
   }
 
-  @Put(':id')
-  updateFull(
-    @Param('id') id: string,
-    @Body() updateQuestionDto: UpdateQuestionDto,
-  ) {
-    return this.questionsService.updateQuestion(+id, updateQuestionDto);
-  }
+  // @Put(':id')
+  // updateFull(
+  // @Param('id') id: string,
+  // @Body() updateQuestionDto: UpdateQuestionDto,
+  // ) {
+  // return this.questionsService.updateQuestion(+id, updateQuestionDto);
+  // }
 
   @Delete(':id')
   async remove(@Param('id') id: string, @Res() res) {
