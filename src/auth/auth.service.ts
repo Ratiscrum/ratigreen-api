@@ -10,6 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtTokenResponse } from './models/jwt-token-response.model';
+import { PublicUser } from 'src/users/entities/public-user.entity';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +20,10 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async login({ email, password }: LoginDto): Promise<JwtTokenResponse> {
+  async login({
+    email,
+    password,
+  }: LoginDto): Promise<{ tokens: JwtTokenResponse; user: PublicUser }> {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
@@ -33,14 +37,14 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    // const payload = { sub: user.id, name: user.name, email: user.email };
+    const { password: _, ...publicUser } = user;
 
-    // return {
-    //   access_token: await this.jwtService.signAsync(payload),
-    // };
     const tokens = await this.getTokens(user.id, user.name);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
-    return tokens;
+    return {
+      tokens,
+      user: publicUser,
+    };
   }
 
   async register({
