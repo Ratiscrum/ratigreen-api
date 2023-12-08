@@ -9,6 +9,9 @@ import * as bcrypt from 'bcrypt';
 import { UsersService } from 'src/users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { authenticator } from 'otplib';
+import { UserEntity } from 'src/users/entities/user.entity';
+import { toDataURL } from 'qrcode';
 import { ConfigService } from '@nestjs/config';
 import { JwtTokenResponse } from './models/jwt-token-response.model';
 import { PublicUser } from 'src/users/entities/public-user.entity';
@@ -41,8 +44,48 @@ export class AuthService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, refreshToken, ...publicUser } = user;
 
+    if(isPasswordValid && user.isTwoFAEnabled) {
+      return { tokens: { accessToken: "", refreshToken: "" }, user: publicUser };
+    }
+
     const tokens = await this.getTokens(user.id, user.name);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    return {
+      tokens,
+      user: publicUser,
+    };
+  }
+
+  async loginWithTwoFa(email: string, password: string, twoFaCode: string) {
+    const user = await this.usersService.findByEmail(email);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    const isPasswordValid = await this.validatePassword(
+      password,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException("Wrong password");
+    }
+
+    const isCodeValid = this.isTwoFactorAuthenticationCodeValid(
+      twoFaCode,
+      user
+    );
+
+    if(!isCodeValid) {
+      throw new UnauthorizedException("Wrong token");
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, refreshToken, ...publicUser } = user;
+
+    const tokens = await this.getTokens(user.id, user.name);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+    
     return {
       tokens,
       user: publicUser,
@@ -96,6 +139,46 @@ export class AuthService {
     userPassword: string,
   ): Promise<boolean> {
     return await bcrypt.compare(password, userPassword);
+  }
+
+  async generateTwoFactorAuthenticationSecret(userId: number) {
+    
+    const user = await this.usersService.findById(userId);
+
+    const secret = authenticator.generateSecret();
+
+    const otpauthUrl = authenticator.keyuri(user.email, "Ratigreen", secret);
+
+    const truc = await this.usersService.setTwoFactorAuthenticationSecret(secret, user.id);
+
+    return {
+      secret,
+      otpauthUrl
+    }
+  }
+
+  async generateQrCodeDataURL(otpAuthUrl: string) {
+    return await toDataURL(otpAuthUrl);
+  }
+
+  async isCodeValid(userId: number, code: string) {
+    const user = await this.usersService.findById(userId)
+
+    return this.isTwoFactorAuthenticationCodeValid(
+      code,
+      user
+    );
+  }
+
+  isTwoFactorAuthenticationCodeValid(twoFactorAuthenticationCode: string, user: UserEntity) {
+    return authenticator.verify({
+      token: twoFactorAuthenticationCode,
+      secret: user.twoFactorAuthenticationSecret
+    })
+  }
+
+  async switchTwoFactorAuthentication(enable: boolean, userId: number) {
+    return this.usersService.switchTwoFactorAuthentication(enable, userId);
   }
 
   private async hashData(data: string): Promise<string> {
