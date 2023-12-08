@@ -1,7 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../services/prisma.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
-import { UpdateQuestionDto } from './dto/update-question.dto';
+//import { UpdateQuestionDto } from './dto/update-question.dto';
 import { Question } from '@prisma/client';
 import { unlinkSync } from 'fs';
 import { join } from 'path';
@@ -11,53 +15,27 @@ export class QuestionsService {
   constructor(private prisma: PrismaService) {}
 
   async createQuestion(data: CreateQuestionDto): Promise<Question> {
-    if (!data.choices || data.choices.length !== 2) {
-      throw new BadRequestException('A question must have exactly 2 choices');
-    }
-
     try {
-      return await this.prisma.question.create({
+      return this.prisma.question.create({
         data: {
           title: data.title,
           answer: data.answer,
           imageUrl: '',
-          choices: {
-            create: data.choices.map((choice) => ({
-              text: choice.text,
-              indicatorCoefficients: {
-                create: choice.indicatorCoefficients.map(
-                  (indicatorCoefficient) => ({
-                    indicator: indicatorCoefficient.indicator,
-                    coefficient: indicatorCoefficient.coefficient,
-                  }),
-                ),
-              },
-            })),
+          sources: {
+            create: data.sources,
+          },
+          datas: {
+            create: data.datas,
           },
         },
         include: {
-          choices: {
-            include: {
-              indicatorCoefficients: true,
-            },
-          },
+          datas: true,
+          sources: true,
         },
       });
     } catch (e) {
       throw new BadRequestException(e.message);
     }
-  }
-
-  async getQuestions() {
-    return this.prisma.question.findMany({
-      include: {
-        choices: {
-          include: {
-            indicatorCoefficients: true,
-          },
-        },
-      },
-    });
   }
 
   async getImage(id: number) {
@@ -81,57 +59,45 @@ export class QuestionsService {
    * @param id The id of the question
    * @returns A Question entity with its choices and indicator coefficients
    */
-  async getQuestion(id: number) {
-    return this.prisma.question.findUnique({
-      where: { id },
+  async getQuestion(questionId: number) {
+    const question = await this.prisma.question.findUnique({
+      where: { id: questionId },
       include: {
-        choices: {
-          include: {
-            indicatorCoefficients: true,
-          },
-        },
-        messages: true,
+        messages: true, // Assuming you want to retrieve messages as well
+        datas: true,
+        sources: true,
+      },
+    });
+
+    if (!question) {
+      throw new NotFoundException(`Question with ID ${questionId} not found`);
+    }
+
+    return question;
+  }
+
+  async getQuestions() {
+    return this.prisma.question.findMany({
+      include: {
+        messages: true, // Assuming you want to retrieve messages as well
+        datas: true,
+        sources: true,
       },
     });
   }
 
-  async updateQuestion(id: number, data: UpdateQuestionDto) {
-    return this.prisma.question.update({
-      where: { id },
-      data,
-      include: {
-        choices: true,
-      },
-    });
-  }
+  // async updateQuestion(id: number, data: UpdateQuestionDto) {
+  //   return this.prisma.question.update({
+  //     where: { id },
+  //     data,
+  //     include: {
+  //       choices: true,
+  //     },
+  //   });
+  // }
 
   async deleteQuestion(id: number) {
     try {
-      // get all the choices of the question
-      const choices = await this.prisma.choice.findMany({
-        where: {
-          questionId: id,
-        },
-      });
-
-      // delete all the indicator coefficients of the choices
-      await Promise.all(
-        choices.map((choice) =>
-          this.prisma.indicatorCoefficient.deleteMany({
-            where: {
-              choiceId: choice.id,
-            },
-          }),
-        ),
-      );
-
-      // delete all the choices of the question
-      await this.prisma.choice.deleteMany({
-        where: {
-          questionId: id,
-        },
-      });
-
       // delete the image of the question inside the uploads folder
       const question = await this.prisma.question.findUnique({
         where: { id },
