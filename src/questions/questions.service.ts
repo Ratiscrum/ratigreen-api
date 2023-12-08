@@ -98,18 +98,44 @@ export class QuestionsService {
 
   async deleteQuestion(id: number) {
     try {
-      // delete the image of the question inside the uploads folder
+      // Retrieve the question to get the imageUrl
       const question = await this.prisma.question.findUnique({
         where: { id },
+        include: {
+          sources: true,
+          datas: true,
+        },
       });
-      if (question.imageUrl) {
+
+      // If the question has an imageUrl, delete the image file
+      if (question && question.imageUrl) {
         const filePath = join(process.cwd(), 'uploads', question.imageUrl);
-        unlinkSync(filePath);
+        try {
+          unlinkSync(filePath);
+        } catch (error) {
+          // Handle the error, e.g., log it or throw an exception
+          console.error(`Failed to delete image file: ${filePath}`, error);
+        }
       }
 
-      return this.prisma.question.delete({
+      // Delete the related Sources and Datas before deleting the question
+      await this.prisma.source.deleteMany({
+        where: { questionId: id },
+      });
+      await this.prisma.data.deleteMany({
+        where: { questionId: id },
+      });
+
+      // Delete the question from the database
+      const deleteResult = await this.prisma.question.delete({
         where: { id },
       });
+
+      if (!deleteResult) {
+        throw new NotFoundException(`Question with ID ${id} not found`);
+      }
+
+      return deleteResult;
     } catch (e) {
       throw new BadRequestException(e.message);
     }
