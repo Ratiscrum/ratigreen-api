@@ -20,7 +20,7 @@ import { MessagesService } from 'src/messages/messages.service';
 import { Public } from 'src/decorators/public.decorator';
 
 @Public()
-@Controller('api/questions')
+@Controller('questions')
 export class QuestionsController {
   private readonly logger = new Logger(QuestionsController.name);
 
