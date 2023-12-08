@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   UnauthorizedException,
@@ -56,6 +57,8 @@ export class AuthService {
     const userExist = await this.usersService.findByEmail(email);
     if (userExist) throw new UnauthorizedException();
 
+    this.isPasswordStrongEnought(password);
+    
     const hash = await this.hashData(password);
 
     const newUser = await this.usersService.create({
@@ -135,5 +138,43 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  private isPasswordStrongEnought(password: string): boolean {
+
+    if(password.length < 12) {
+      throw new BadRequestException("Le mot de passe doit faire au moins 12 caractères.")
+    }
+
+    const uppercaseRegex = /[A-Z]/;
+    const lowercaseRegex = /[a-z]/;
+    const digitRegex = /[0-9]/;
+    const specialRegex = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/;
+  
+    if(
+      !uppercaseRegex.test(password)
+    ) {
+      throw new BadRequestException("Le mot de passe doit contenir au moins une majuscule.")
+    }
+
+    if(
+      !lowercaseRegex.test(password)
+    ) {
+      throw new BadRequestException("Le mot de passe doit contenir au moins une minuscule.")
+    }
+
+    if(
+      !digitRegex.test(password)
+    ) {
+      throw new BadRequestException("Le mot de passe doit contenir au moins un chiffre.")
+    }
+
+    if(
+      !specialRegex.test(password)
+    ) {
+      throw new BadRequestException("Le mot de passe doit contenir au moins un caractère spécial.")
+    }
+
+    return true;
   }
 }
