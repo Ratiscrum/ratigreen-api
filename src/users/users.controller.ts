@@ -6,7 +6,9 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
+  async getProfile(@Request() req) {
+    const { password, refreshToken, ...user } =
+      await this.usersService.findById(req.user.sub);
+    return user;
   }
 }
