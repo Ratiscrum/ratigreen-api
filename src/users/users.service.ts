@@ -22,4 +22,18 @@ export class UsersService {
 
     return result;
   }
+
+  async setTwoFactorAuthenticationSecret(secret: string, userId: number) {
+    return this.prisma.user.update({
+      data: { twoFactorAuthenticationSecret: secret },
+      where: { id: userId }
+    });
+  }
+
+  async switchTwoFactorAuthentication(value: boolean, userId: number) {
+    return this.prisma.user.update({
+      data: { isTwoFAEnabled: value },
+      where: { id: userId }
+    });
+  }
 }

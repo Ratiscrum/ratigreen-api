@@ -5,6 +5,8 @@ export class UserEntity implements User {
   email: string;
   name: string;
   password: string;
+  twoFactorAuthenticationSecret: string | null;
+  isTwoFAEnabled: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
