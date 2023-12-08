@@ -57,6 +57,10 @@ export class AuthService {
     const userExist = await this.usersService.findByEmail(email);
     if (userExist) throw new UnauthorizedException();
 
+    if(!this.isEmail(email)) {
+      throw new BadRequestException("L'email n'est pas valide");
+    }
+    
     this.isPasswordStrongEnought(password);
     
     const hash = await this.hashData(password);
@@ -176,5 +180,10 @@ export class AuthService {
     }
 
     return true;
+  }
+
+  private isEmail(mail: string): boolean {
+    const regex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(mail);
   }
 }
