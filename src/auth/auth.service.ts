@@ -138,14 +138,15 @@ export class AuthService {
     return await bcrypt.compare(password, userPassword);
   }
 
-  async generateTwoFactorAuthenticationSecret(user: UserEntity) {
+  async generateTwoFactorAuthenticationSecret(userId: number) {
+    
+    const user = await this.usersService.findById(userId);
+
     const secret = authenticator.generateSecret();
 
     const otpauthUrl = authenticator.keyuri(user.email, "Ratigreen", secret);
 
     const truc = await this.usersService.setTwoFactorAuthenticationSecret(secret, user.id);
-
-    console.log(truc)
 
     return {
       secret,
@@ -157,8 +158,8 @@ export class AuthService {
     return await toDataURL(otpAuthUrl);
   }
 
-  async isCodeValid(requestUser: UserEntity, code: string) {
-    const user = await this.usersService.findByEmail(requestUser.email)
+  async isCodeValid(userId: number, code: string) {
+    const user = await this.usersService.findById(userId)
 
     return this.isTwoFactorAuthenticationCodeValid(
       code,

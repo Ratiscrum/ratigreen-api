@@ -28,21 +28,21 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('two-fa/change')
   async turnOnTwoFA(@Req() request, @Body() body) { 
-    const codeValid = this.authService.isCodeValid(request.user, body.twoFactorAuthenticationCode);
+    const codeValid = await this.authService.isCodeValid(request.user.sub, body.twoFactorAuthenticationCode);
 
     if(!codeValid) {
       throw new UnauthorizedException('Wrong authentication code');
     }
 
-    await this.authService.switchTwoFactorAuthentication(body.enable, request.user.id);
+    await this.authService.switchTwoFactorAuthentication(body.enable, request.user.sub);
 
-    return { message: "2FA enabled" }
+    return { message: `2FA ${body.enable ? "enabled" : "disabled"}` };
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('two-fa/generate')
   async generateQrCode(@Req() request) {
-    const res = await this.authService.generateTwoFactorAuthenticationSecret(request.user);
+    const res = await this.authService.generateTwoFactorAuthenticationSecret(request.user.sub);
 
     const image = await this.authService.generateQrCodeDataURL( res.otpauthUrl );
 
