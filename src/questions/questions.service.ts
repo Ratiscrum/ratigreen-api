@@ -77,13 +77,21 @@ export class QuestionsService {
   }
 
   async getQuestions() {
-    return this.prisma.question.findMany({
+    const questions = await this.prisma.question.findMany({
       include: {
         messages: true, // Assuming you want to retrieve messages as well
         datas: true,
         sources: true,
       },
     });
+
+    // randomizer
+    for (let i = questions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1)); 
+      [questions[i], questions[j]] = [questions[j], questions[i]];
+    }
+  
+    return questions;
   }
 
   // async updateQuestion(id: number, data: UpdateQuestionDto) {
