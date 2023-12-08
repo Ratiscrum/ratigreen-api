@@ -140,4 +140,11 @@ export class QuestionsService {
       throw new BadRequestException(e.message);
     }
   }
+
+  async getRandomQuestion() {
+    const questions = await this.prisma.question.findMany();
+    const rQuestion = questions[Math.floor(Math.random() * questions.length)];
+
+    return rQuestion;
+  }
 }

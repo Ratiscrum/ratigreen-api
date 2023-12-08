@@ -103,6 +103,11 @@ export class QuestionsController {
     return this.questionsService.getQuestions();
   }
 
+  @Get('random')
+  findRandom() {
+    return this.questionsService.getRandomQuestion();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.questionsService.getQuestion(+id);
